@@ -32,7 +32,6 @@
 
     /* ── Header ── */
     .header {
-      background: linear-gradient(135deg, #1a6fa8 0%, #1259891 100%);
       background: var(--primary);
       color: #fff;
       padding: 28px 20px 24px;
@@ -61,14 +60,6 @@
       box-shadow: var(--shadow);
       animation: fadeUp 0.3s ease both;
       border-left: 4px solid var(--primary);
-    }
-    .id-card .label {
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: var(--primary);
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
     }
     .id-card .title {
       font-size: 1rem;
@@ -158,14 +149,6 @@
       animation: fadeUp 0.35s ease both;
       border-left: 4px solid var(--warn);
     }
-    .timing-card .label {
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: var(--warn);
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
     .timing-card .title {
       font-size: 1rem;
       font-weight: 700;
@@ -201,13 +184,8 @@
       cursor: pointer;
       transition: border-color 0.2s;
     }
-    select#timing:focus {
-      border-color: var(--primary);
-    }
-    select#timing.selected {
-      border-color: var(--primary);
-      background: #fff;
-    }
+    select#timing:focus { border-color: var(--primary); }
+    select#timing.selected { border-color: var(--primary); background: #fff; }
     .timing-required {
       font-size: 0.75rem;
       color: #c62828;
@@ -313,7 +291,7 @@
 
 <div class="header">
   <h1>食欲・空腹感の記録</h1>
-  <p>設問に対し、現在の状態に最も当てはまると思える位置に<br>スライダーを動かしてください。<br>最後に「記録を保存する」を押してください。</p>
+  <p>スライダーを動かして現在の状態を選び<br>最後に「記録を保存する」を押してください</p>
 </div>
 
 <div class="content">
@@ -325,19 +303,19 @@
     <p class="id-required" id="id-required">※ IDを入力してください</p>
   </div>
 
-  <!-- 何日目カード -->
-<div class="day-card">
-  <div class="title">何日目の測定ですか？</div>
-  <div class="day-btn-group">
-    <button type="button" class="day-btn" data-day="0">0日目</button>
-    <button type="button" class="day-btn" data-day="1">1日目</button>
-    <button type="button" class="day-btn" data-day="2">2日目</button>
-    <button type="button" class="day-btn" data-day="3">3日目</button>
+  <!-- ② 何日目か -->
+  <div class="day-card">
+    <div class="title">何日目の測定ですか？</div>
+    <div class="day-btn-group">
+      <button type="button" class="day-btn" data-day="0">0日目</button>
+      <button type="button" class="day-btn" data-day="1">1日目</button>
+      <button type="button" class="day-btn" data-day="2">2日目</button>
+      <button type="button" class="day-btn" data-day="3">3日目</button>
+    </div>
+    <p class="day-required" id="day-required">※ 日数を選択してください</p>
   </div>
-  <p class="day-required" id="day-required">※ 日数を選択してください</p>
-</div>
-  
-  <!-- ② タイミング選択 -->
+
+  <!-- ③ タイミング選択 -->
   <div class="timing-card">
     <div class="title">測定タイミングを選んでください</div>
     <div class="select-wrap">
@@ -345,20 +323,20 @@
         <option value="">― タイミングを選択 ―</option>
         <option value="before_sleep">就寝直前</option>
         <option value="after_wake">起床直後</option>
-        <option value="meal_0">食事開始時</option>
+        <option value="meal_0">食事開始時点</option>
       </select>
     </div>
     <p class="timing-required" id="timing-required">※ タイミングを選択してください</p>
   </div>
 
-  <!-- ③ VAS 質問群 -->
+  <!-- ④ VAS 質問群 -->
   <div class="vas-card">
     <div class="q-num">Q1</div>
     <div class="question">今、どれくらい空腹ですか？</div>
     <input type="range" min="0" max="100" step="0.1" value="50" id="hunger-slider">
     <div class="vas-labels">
       <span>まったく<br>空腹でない</span>
-      <span>かなり<br>空腹である</span>
+      <span>非常に<br>空腹である</span>
     </div>
   </div>
 
@@ -368,7 +346,7 @@
     <input type="range" min="0" max="100" step="0.1" value="50" id="satiety-slider">
     <div class="vas-labels">
       <span>まったく<br>満腹でない</span>
-      <span>かなり<br>満腹である</span>
+      <span>非常に<br>満腹である</span>
     </div>
   </div>
 
@@ -401,7 +379,6 @@
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbx2QJBx4GTxXr38VbxyXqgCsxkHm102iW7SZ4NIdbh53hjU4D6Cp1idFYxQ945IHek34g/exec";
 
-// スライダー ↔ バッジ連動
 const sliderMap = [
   { slider: document.getElementById("hunger-slider")   },
   { slider: document.getElementById("satiety-slider")  },
@@ -425,6 +402,8 @@ function resetAll() {
     slider.value = 50;
     updateRail(slider);
   });
+  document.querySelectorAll(".day-btn").forEach(b => b.classList.remove("active"));
+  selectedDay = null;
   const timingEl = document.getElementById("timing");
   timingEl.value = "";
   timingEl.classList.remove("selected");
@@ -442,11 +421,10 @@ document.querySelectorAll(".day-btn").forEach(btn => {
     document.getElementById("day-required").style.display = "none";
   });
 });
-  
-// ID入力スタイル
+
+// ID入力
 const subjectIdEl = document.getElementById("subject-id");
 subjectIdEl.addEventListener("input", () => {
-  // 半角数字のみ許可
   subjectIdEl.value = subjectIdEl.value.replace(/[^0-9]/g, "");
   subjectIdEl.classList.toggle("filled", subjectIdEl.value !== "");
   if (subjectIdEl.value !== "") {
@@ -454,7 +432,7 @@ subjectIdEl.addEventListener("input", () => {
   }
 });
 
-//タイミング選択
+// タイミング選択
 const timingEl = document.getElementById("timing");
 timingEl.addEventListener("change", () => {
   timingEl.classList.toggle("selected", timingEl.value !== "");
@@ -470,8 +448,8 @@ function getTimestamp() {
 }
 
 document.getElementById("save-btn").addEventListener("click", async () => {
-  const statusEl = document.getElementById("status");
-  const btn      = document.getElementById("save-btn");
+  const statusEl  = document.getElementById("status");
+  const btn       = document.getElementById("save-btn");
   const subjectId = document.getElementById("subject-id").value.trim();
   const timing    = document.getElementById("timing").value;
 
@@ -479,6 +457,11 @@ document.getElementById("save-btn").addEventListener("click", async () => {
   if (!subjectId) {
     document.getElementById("id-required").style.display = "block";
     document.getElementById("subject-id").focus();
+    statusEl.textContent = "";
+    return;
+  }
+  if (selectedDay === null) {
+    document.getElementById("day-required").style.display = "block";
     statusEl.textContent = "";
     return;
   }
@@ -496,11 +479,12 @@ document.getElementById("save-btn").addEventListener("click", async () => {
   const payload = {
     timestamp:  getTimestamp(),
     subject_id: subjectId,
+    study_day:  selectedDay,
     timing:     timing,
-    hunger:    document.getElementById("hunger-slider").value,
-    satiety:   document.getElementById("satiety-slider").value,
-    desire:    document.getElementById("desire-slider").value,
-    capacity:  document.getElementById("capacity-slider").value,
+    hunger:     document.getElementById("hunger-slider").value,
+    satiety:    document.getElementById("satiety-slider").value,
+    desire:     document.getElementById("desire-slider").value,
+    capacity:   document.getElementById("capacity-slider").value,
   };
 
   try {
