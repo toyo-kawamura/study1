@@ -99,6 +99,55 @@
       display: none;
     }
 
+    /* ── Day selector card ── */
+    .day-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px 18px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+      animation: fadeUp 0.32s ease both;
+      border-left: 4px solid var(--accent);
+    }
+    .day-card .title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .day-btn-group {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .day-btn {
+      padding: 14px 4px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--muted);
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .day-btn:active { transform: scale(0.95); }
+    .day-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(14,158,110,0.3);
+    }
+    .day-required {
+      font-size: 0.75rem;
+      color: #c62828;
+      margin-top: 6px;
+      display: none;
+    }
+
     /* ── Timing selector card ── */
     .timing-card {
       background: var(--card);
@@ -271,15 +320,25 @@
 
   <!-- ① 対象者ID -->
   <div class="id-card">
-    <div class="label">STEP 1</div>
     <div class="title">対象者IDを入力してください</div>
     <input type="number" id="subject-id" inputmode="numeric" pattern="[0-9]*" placeholder="例：1001">
     <p class="id-required" id="id-required">※ IDを入力してください</p>
   </div>
 
+  <!-- 何日目カード -->
+<div class="day-card">
+  <div class="title">何日目の測定ですか？</div>
+  <div class="day-btn-group">
+    <button type="button" class="day-btn" data-day="0">0日目</button>
+    <button type="button" class="day-btn" data-day="1">1日目</button>
+    <button type="button" class="day-btn" data-day="2">2日目</button>
+    <button type="button" class="day-btn" data-day="3">3日目</button>
+  </div>
+  <p class="day-required" id="day-required">※ 日数を選択してください</p>
+</div>
+  
   <!-- ② タイミング選択 -->
   <div class="timing-card">
-    <div class="label">STEP 2</div>
     <div class="title">測定タイミングを選んでください</div>
     <div class="select-wrap">
       <select id="timing">
@@ -373,6 +432,17 @@ function resetAll() {
   subjectIdEl.classList.remove("filled");
 }
 
+// 日数ボタン
+let selectedDay = null;
+document.querySelectorAll(".day-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".day-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    selectedDay = btn.dataset.day;
+    document.getElementById("day-required").style.display = "none";
+  });
+});
+  
 // ID入力スタイル
 const subjectIdEl = document.getElementById("subject-id");
 subjectIdEl.addEventListener("input", () => {
@@ -384,7 +454,7 @@ subjectIdEl.addEventListener("input", () => {
   }
 });
 
-
+//タイミング選択
 const timingEl = document.getElementById("timing");
 timingEl.addEventListener("change", () => {
   timingEl.classList.toggle("selected", timingEl.value !== "");
