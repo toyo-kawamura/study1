@@ -98,7 +98,7 @@
       margin-bottom: 14px;
       box-shadow: var(--shadow);
       animation: fadeUp 0.32s ease both;
-      border-left: 4px solid var(--accent);
+      border-left: 4px solid var(--primary);
     }
     .day-card .title {
       font-size: 1rem;
@@ -127,10 +127,10 @@
     }
     .day-btn:active { transform: scale(0.95); }
     .day-btn.active {
-      background: var(--accent);
-      border-color: var(--accent);
+      background: var(--primary);
+      border-color: var(--primary);
       color: #fff;
-      box-shadow: 0 3px 10px rgba(14,158,110,0.3);
+      box-shadow: 0 3px 10px rgba(26,111,168,0.3);
     }
     .day-required {
       font-size: 0.75rem;
@@ -147,7 +147,7 @@
       margin-bottom: 14px;
       box-shadow: var(--shadow);
       animation: fadeUp 0.35s ease both;
-      border-left: 4px solid var(--warn);
+      border-left: 4px solid var(--primary);
     }
     .timing-card .title {
       font-size: 1rem;
@@ -155,37 +155,33 @@
       margin-bottom: 14px;
       line-height: 1.5;
     }
-    .select-wrap {
-      position: relative;
+    .timing-btn-group {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
     }
-    .select-wrap::after {
-      content: "▼";
-      font-size: 0.7rem;
-      color: var(--primary);
-      position: absolute;
-      right: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      pointer-events: none;
-    }
-    select#timing {
-      width: 100%;
-      padding: 14px 38px 14px 16px;
+    .timing-btn {
+      padding: 14px 6px;
       font-family: inherit;
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: var(--text);
-      background: var(--primary-light);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--muted);
+      background: var(--bg);
       border: 2px solid var(--border);
       border-radius: 10px;
-      appearance: none;
-      -webkit-appearance: none;
-      outline: none;
       cursor: pointer;
-      transition: border-color 0.2s;
+      text-align: center;
+      line-height: 1.45;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
     }
-    select#timing:focus { border-color: var(--primary); }
-    select#timing.selected { border-color: var(--primary); background: #fff; }
+    .timing-btn:active { transform: scale(0.95); }
+    .timing-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(26,111,168,0.30);
+    }
     .timing-required {
       font-size: 0.75rem;
       color: #c62828;
@@ -315,16 +311,13 @@
     <p class="day-required" id="day-required">※ 日数を選択してください</p>
   </div>
 
-  <!-- ③ タイミング選択 -->
+  <!-- ③ タイミング選択（ボタン式） -->
   <div class="timing-card">
     <div class="title">測定タイミングを選んでください</div>
-    <div class="select-wrap">
-      <select id="timing">
-        <option value="">― タイミングを選択 ―</option>
-        <option value="before_sleep">就寝直前</option>
-        <option value="after_wake">起床直後</option>
-        <option value="meal_0">食事開始時点</option>
-      </select>
+    <div class="timing-btn-group">
+      <button type="button" class="timing-btn" data-timing="before_sleep">就寝直前</button>
+      <button type="button" class="timing-btn" data-timing="after_wake">起床直後</button>
+      <button type="button" class="timing-btn" data-timing="meal_0">食事開始時点</button>
     </div>
     <p class="timing-required" id="timing-required">※ タイミングを選択してください</p>
   </div>
@@ -404,9 +397,8 @@ function resetAll() {
   });
   document.querySelectorAll(".day-btn").forEach(b => b.classList.remove("active"));
   selectedDay = null;
-  const timingEl = document.getElementById("timing");
-  timingEl.value = "";
-  timingEl.classList.remove("selected");
+  document.querySelectorAll(".timing-btn").forEach(b => b.classList.remove("active"));
+  selectedTiming = null;
   subjectIdEl.value = "";
   subjectIdEl.classList.remove("filled");
 }
@@ -422,6 +414,17 @@ document.querySelectorAll(".day-btn").forEach(btn => {
   });
 });
 
+// タイミングボタン
+let selectedTiming = null;
+document.querySelectorAll(".timing-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".timing-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    selectedTiming = btn.dataset.timing;
+    document.getElementById("timing-required").style.display = "none";
+  });
+});
+
 // ID入力
 const subjectIdEl = document.getElementById("subject-id");
 subjectIdEl.addEventListener("input", () => {
@@ -429,15 +432,6 @@ subjectIdEl.addEventListener("input", () => {
   subjectIdEl.classList.toggle("filled", subjectIdEl.value !== "");
   if (subjectIdEl.value !== "") {
     document.getElementById("id-required").style.display = "none";
-  }
-});
-
-// タイミング選択
-const timingEl = document.getElementById("timing");
-timingEl.addEventListener("change", () => {
-  timingEl.classList.toggle("selected", timingEl.value !== "");
-  if (timingEl.value !== "") {
-    document.getElementById("timing-required").style.display = "none";
   }
 });
 
@@ -451,7 +445,6 @@ document.getElementById("save-btn").addEventListener("click", async () => {
   const statusEl  = document.getElementById("status");
   const btn       = document.getElementById("save-btn");
   const subjectId = document.getElementById("subject-id").value.trim();
-  const timing    = document.getElementById("timing").value;
 
   // バリデーション
   if (!subjectId) {
@@ -465,9 +458,8 @@ document.getElementById("save-btn").addEventListener("click", async () => {
     statusEl.textContent = "";
     return;
   }
-  if (!timing) {
+  if (selectedTiming === null) {
     document.getElementById("timing-required").style.display = "block";
-    document.getElementById("timing").focus();
     statusEl.textContent = "";
     return;
   }
@@ -480,7 +472,7 @@ document.getElementById("save-btn").addEventListener("click", async () => {
     timestamp:  getTimestamp(),
     subject_id: subjectId,
     study_day:  selectedDay,
-    timing:     timing,
+    timing:     selectedTiming,
     hunger:     document.getElementById("hunger-slider").value,
     satiety:    document.getElementById("satiety-slider").value,
     desire:     document.getElementById("desire-slider").value,
